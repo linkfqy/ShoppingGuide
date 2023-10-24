@@ -1,0 +1,6 @@
+*.zip
+draft.py
+ElectronicMallApi/target
+ElectronicMallApi/*.sql
+ElectronicMallVue/node_modules
+ElectronicMallVue/*.sql
