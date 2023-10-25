@@ -19,14 +19,15 @@ const routes = [
     component: () => import('../views/front/Front.vue'),
     meta: {title:'在线商城', path: '在线商城', requireAuth: false},
     children: [
-      {path: 'person', name: 'person', meta: {title:'个人信息',requireLogin: true}, component: () => import('../views/Person.vue'),},
+      {path: 'person', name: 'person', meta: {title:'个人信息',requireLogin: false}, component: () => import('../views/Person.vue'),},
       {path: 'topview', name: 'topview', meta: {title:'在线商城'}, component: () => import('../views/front/TopView.vue'),},
-      {path: 'cart', name: 'cart', meta: {title:'我的购物车',requireLogin: true}, component: () => import('../views/front/good/Cart.vue'),},
+      {path: 'cart', name: 'cart', meta: {title:'我的购物车',requireLogin: false}, component: () => import('../views/front/good/Cart.vue'),},
       {path: 'goodList', name: 'goodList', meta: {title:'商品界面'}, component: () => import('../views/front/good/GoodList.vue'),},
       {path: 'goodView/:goodId', name: 'goodview', meta: {title:'商品详情'}, component: () => import('../views/front/good/GoodView.vue'),},
-      {path: 'preOrder', name: 'preOrder', meta: {title:'确认订单',requireLogin: true}, component: () => import('../views/front/order/PreOrder.vue'),},
-      {path: 'pay', name: 'pay', meta: {title:'支付',requireLogin: true}, component: () => import('../views/front/order/Pay.vue'),},
-      {path: 'orderList', name: 'orderList', meta: {title:'我的订单',requireLogin: true}, component: () => import('../views/front/order/OrderList.vue'),},
+      {path: 'preOrder', name: 'preOrder', meta: {title:'确认订单',requireLogin: false}, component: () => import('../views/front/order/PreOrder.vue'),},
+      {path: 'pay', name: 'pay', meta: {title:'支付',requireLogin: false}, component: () => import('../views/front/order/Pay.vue'),},
+      {path: 'orderList', name: 'orderList', meta: {title:'我的订单',requireLogin: false}, component: () => import('../views/front/order/OrderList.vue'),},
+      {path: 'chat-item', name: 'chat-item', meta: {title:'虚拟导购',requireLogin: false}, component: () => import('../views/Chat.vue'),},
 
     ]
   },
