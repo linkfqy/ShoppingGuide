@@ -3,6 +3,8 @@ package com.rabbiter.em.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.rabbiter.em.entity.User;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Select;
+
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
     /*
@@ -24,4 +26,6 @@ public interface UserMapper extends BaseMapper<User> {
     int searchTotal(String username, String nickname);
 
      */
+    @Select("select username from sys_user where id = #{id}")
+    String getUsernameById(int id);
 }

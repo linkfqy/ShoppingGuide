@@ -8,7 +8,7 @@
     <el-row>
       <el-col :span="3">
         <div style="font-size: 20px; font-weight: bold; text-align: center">
-          <a href="/"><i class="el-icon-a-011"></i> 在线商城</a>
+          <a href="/"><i class="el-icon-a-011" style="font-size: 24px;"></i> 在线商城</a>
         </div>
       </el-col>
       <el-col :span="17">
@@ -28,9 +28,6 @@
           >
           <el-menu-item index="/orderlist" class="menu-item"
             >我的订单</el-menu-item
-          >
-          <el-menu-item index="/chat-item" class="menu-item"
-            >虚拟导购</el-menu-item
           >
           <el-menu-item
             index="/manage"

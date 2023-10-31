@@ -27,7 +27,6 @@ const routes = [
       {path: 'preOrder', name: 'preOrder', meta: {title:'确认订单',requireLogin: true}, component: () => import('../views/front/order/PreOrder.vue'),},
       {path: 'pay', name: 'pay', meta: {title:'支付',requireLogin: true}, component: () => import('../views/front/order/Pay.vue'),},
       {path: 'orderList', name: 'orderList', meta: {title:'我的订单',requireLogin: true}, component: () => import('../views/front/order/OrderList.vue'),},
-      {path: 'chat-item', name: 'chat-item', meta: {title:'虚拟导购',requireLogin: true}, component: () => import('../views/Chat.vue'),},
 
     ]
   },

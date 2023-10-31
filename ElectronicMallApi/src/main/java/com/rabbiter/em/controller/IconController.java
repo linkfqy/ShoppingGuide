@@ -73,4 +73,8 @@ public class IconController {
         return iconService.deleteById(id);
     }
 
+    @GetMapping("/{iconId}/categoryIds")
+    public Result getCategoryIdsByIconId(@PathVariable Long iconId) {
+            return Result.success(iconService.getCategoryIdsByIconId(iconId));
+    }
 }
