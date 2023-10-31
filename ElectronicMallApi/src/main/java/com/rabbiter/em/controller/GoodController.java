@@ -119,4 +119,13 @@ public class GoodController {
         return Result.success(goodService.findFullPage(pageNum,pageSize,searchText,categoryId));
     }
 
+    @GetMapping("/pages")
+    public Result findGoodsByCategoryIds(
+            @RequestParam(required = false, defaultValue = "1") Integer pageNum,
+            @RequestParam(required = false, defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false, defaultValue = "") String searchText,
+            @RequestParam(required = false) List<Integer> categoryIds) {
+        return Result.success(goodService.findGoodsByCategoryIds(pageNum,pageSize,searchText,categoryIds));
+    }
+
 }

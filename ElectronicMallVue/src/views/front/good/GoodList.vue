@@ -10,12 +10,16 @@
         <!--      类别菜单-->
         <el-row :gutter="20" style="font-size: 18px;">
           <el-col v-for="(item, index) in icons" :key="index" :span="6">
-            <i class="iconfont" v-html="item.value"></i> 
+            <i class="iconfont" v-html="item.value" 
+            @click.prevent="load('icon', item.id),selectIcon(item.id)"
+            :class="{'selected-icon': isSelectedIcon(item.id), 'unselected-icon': !isSelectedIcon(item.id)  }"
+            @mouseover="setHandCursor"
+            @mouseout="setDefaultCursor"></i> 
             <span v-for="(category, index2) in item.categories" :key="index2">
               <b>
                 <a
                   href="#"
-                  @click.prevent="load(category.id)"
+                  @click.prevent="load('category', category.id)"
                   :class="{
                     black: categoryId == category.id,
                     grey: categoryId != category.id,
@@ -73,6 +77,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import search from "../../../components/Search";
 
 export default {
@@ -89,6 +94,9 @@ export default {
       //搜索的内容
       searchText: "",
       good: [],
+      categoryIds:[],
+      selectedIconId: null,
+      isHandCursor: false,
       baseApi: this.$store.state.baseApi,
     };
   },
@@ -101,7 +109,7 @@ export default {
     this.categoryId = this.$route.query.categoryId;
 
     this.loadCategories();
-    this.load();
+    this.load('category',);
   },
   methods: {
     loadCategories() {
@@ -119,33 +127,97 @@ export default {
       this.searchText = text;
       this.load();
     },
-    load(categoryId) {
-      if (categoryId != undefined) {
-        this.categoryId = categoryId;
+    load(type, id) {
+      if (type === 'icon') {
+        this.categoryIds = null;
+        this.selectedIconId = id;
+      this.request.get(`/api/icon/${id}/categoryIds`)
+        .then((response) => {
+          if (response.code === '200') {
+            const categoryIds = response.data;
+            this.categoryIds = categoryIds;
+
+            this.request.get("/api/good/pages", {
+              params: {
+                pageNum: this.currentPage,
+                pageSize: this.pageSize,
+                searchText: this.searchText,
+                categoryIds: categoryIds.join(','),
+              },
+            })
+            .then((res) => {
+              if (res.code === "200") {
+                this.total = res.data.total;
+                this.good = res.data.records;
+              }
+            });
+          }
+        });
+    } else if (type === 'category') {
+      this.selectedIconId = null;
+      if (id != undefined) {
+        this.categoryId = id;
 
         this.$router.push({
           path: "/goodlist",
           query: { categoryId: this.categoryId },
         });
       }
+
+      this.request.get("/api/good/page", {
+        params: {
+          pageNum: this.currentPage,
+          pageSize: this.pageSize,
+          searchText: this.searchText,
+          categoryId: this.categoryId,
+        },
+      })
+      .then((res) => {
+        if (res.code === "200") {
+          this.total = res.data.total;
+          this.good = res.data.records;
+        }
+      });
+    }
+    this.returnCurrentCategory();
+    },
+    selectIcon(iconId) {
+      this.selectedIconId = iconId;
+      this.categoryId = null;
+      this.$router.push({
+        path: "/goodlist",
+        query: { iconId: iconId }
+      });
+    },
+    setHandCursor() {
+      this.isHandCursor = true;
+    },
+    setDefaultCursor() {
+      this.isHandCursor = false;
+    },
+    returnCurrentCategory(){
+      const requestData = {
+        iconId: this.selectedIconId,
+        categoryId: this.categoryId
+      };
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Authorization': `Bearer ${token}`
+      };
       this.request
-        .get("/api/good/page", {
-          params: {
-            pageNum: this.currentPage,
-            pageSize: this.pageSize,
-            searchText: this.searchText,
-            categoryId: this.categoryId,
-          },
-        })
-        .then((res) => {
-          if (res.code === "200") {
-            this.total = res.data.total;
-            this.good = res.data.records;
-            
-          }
-        });
+      .post("/api/userinfo/post_iconId_or_categoryId", requestData)
+      .then((res) => {
+      if (res.code === "200") {
+        const userinfoData = res.data;
+        this.request.post("http://localhost:9193/get_userinfo", userinfoData, {headers: headers});
+      }});
     },
   },
+  computed: {
+  isSelectedIcon() {
+    return (iconId) => this.selectedIconId === iconId;
+  },
+},
 };
 </script>
 
@@ -165,4 +237,12 @@ export default {
 .grey {
   color: grey;
 }
+.selected-icon {
+  color: black; /* 修改颜色为选中时的颜色 */
+  cursor: pointer; /* 鼠标悬停时显示手型 */
+}
+.unselected-icon {
+    color: grey; /* 未选中状态下的颜色为灰色 */
+    cursor: pointer;
+  }
 </style>

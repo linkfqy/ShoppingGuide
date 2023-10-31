@@ -159,4 +159,30 @@ public class GoodService extends ServiceImpl<GoodMapper, Good> {
         }
         return page;
     }
+
+    public IPage<GoodDTO> findGoodsByCategoryIds(Integer pageNum, Integer pageSize, String searchText, List<Integer> categoryIds) {
+        LambdaQueryWrapper<Good> query = Wrappers.<Good>lambdaQuery().orderByDesc(Good::getId);
+        //对名称和描述进行模糊查询
+        if (StrUtil.isNotBlank(searchText)) {
+            query.like(Good::getName, searchText).or().like(Good::getDescription,searchText).or().eq(Good::getId,searchText);
+        }
+        if(categoryIds != null){
+            query.in(Good::getCategoryId,categoryIds);
+        }
+        //筛除掉已被删除的商品
+        query.eq(Good::getIsDelete,false);
+        IPage<Good> page = this.page(new Page<>(pageNum, pageSize), query);
+        //把good转为dto
+        IPage<GoodDTO> goodDTOPage = page.convert(good -> {
+            GoodDTO goodDTO = new GoodDTO();
+            BeanUtil.copyProperties(good, goodDTO);
+            return goodDTO;
+        });
+        for (GoodDTO good : goodDTOPage.getRecords()) {
+            //附上最低价格
+            good.setPrice(getMinPrice(good.getId()));
+        }
+        return goodDTOPage;
+    }
+
 }

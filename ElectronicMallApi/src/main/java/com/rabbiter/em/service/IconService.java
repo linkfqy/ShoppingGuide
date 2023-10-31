@@ -42,4 +42,13 @@ public class IconService extends ServiceImpl<IconMapper, Icon> {
         super.removeById(id);
         return BaseApi.success();
     }
+
+    /**
+     * 获取指定 Icon 下的 categoryId 列表
+     * @param iconId Icon 的 ID
+     * @return categoryId 列表
+     */
+    public List<Long> getCategoryIdsByIconId(Long iconId) {
+        return iconCategoryMapper.getCategoryIdsByIconId(iconId);
+    }
 }
