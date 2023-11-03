@@ -6,11 +6,8 @@ import com.rabbiter.em.annotation.Authority;
 import com.rabbiter.em.entity.AuthorityType;
 import com.rabbiter.em.entity.User;
 import com.rabbiter.em.entity.UserInfo;
-import com.rabbiter.em.mapper.CategoryMapper;
-import com.rabbiter.em.mapper.IconMapper;
-import com.rabbiter.em.mapper.UserMapper;
+import com.rabbiter.em.mapper.*;
 import com.rabbiter.em.utils.TokenUtils;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -38,8 +35,12 @@ public class UserInfoService {
     private IconMapper iconMapper;
     @Resource
     private UserMapper userMapper;
+    @Resource
+    private IconService iconService;
+    @Resource
+    private GoodMapper goodMapper;
 
-    public UserInfo getUserInfo(Integer iconId, Integer categoryId, @NotNull HttpServletRequest request){
+    public UserInfo getUserInfo(Integer iconId, Integer categoryId, HttpServletRequest request){
         UserInfo userInfo = new UserInfo();
         String token = request.getHeader("token");
         Integer userId = Integer.parseInt(JWT.decode(token).getAudience().get(0));
@@ -63,12 +64,21 @@ public class UserInfoService {
         String iconName = null;
         if(iconId != null){
             iconName = iconMapper.getNameById(iconId);
+            List<Long> currentSubCategoryIdList = iconService.getCategoryIdsByIconId((long) iconId);
+            List<String> currentFirstCategoryList = new ArrayList<>();
+            for(Long id: currentSubCategoryIdList){
+                String subCategoryName = categoryMapper.getNameById(id.intValue());
+                currentFirstCategoryList.add(subCategoryName);
+            }
+            userInfo.setCurrentFirstCategoryList(currentFirstCategoryList);
         }
         if(categoryId != null) {
             categoryName = categoryMapper.getNameById(categoryId);
+            userInfo.setCurrentSecondCategoryList(goodMapper.getGoodNameByCategoryId(categoryId));
         }
         userInfo.setCurrentFirstCategory(iconName);
         userInfo.setCurrentSecondCategory(categoryName);
+        userInfo.setAllItems(goodMapper.getAllGoodName());
         return userInfo;
     }
 }

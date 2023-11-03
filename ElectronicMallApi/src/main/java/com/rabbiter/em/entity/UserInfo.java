@@ -8,6 +8,9 @@ public class UserInfo {
     private List<String> orderItems;
     private String currentFirstCategory;
     private String currentSecondCategory;
+    private List<String> currentFirstCategoryList;
+    private List<String> currentSecondCategoryList;
+    private List<String> allItems;
 
     public String getUsername() {
         return username;
@@ -47,5 +50,29 @@ public class UserInfo {
 
     public void setCurrentSecondCategory(String currentSecondCategory) {
         this.currentSecondCategory = currentSecondCategory;
+    }
+
+    public List<String> getCurrentFirstCategoryList() {
+        return currentFirstCategoryList;
+    }
+
+    public void setCurrentFirstCategoryList(List<String> currentFirstCategoryList) {
+        this.currentFirstCategoryList = currentFirstCategoryList;
+    }
+
+    public List<String> getCurrentSecondCategoryList() {
+        return currentSecondCategoryList;
+    }
+
+    public void setCurrentSecondCategoryList(List<String> currentSecondCategoryList) {
+        this.currentSecondCategoryList = currentSecondCategoryList;
+    }
+
+    public List<String> getAllItems() {
+        return allItems;
+    }
+
+    public void setAllItems(List<String> allItems) {
+        this.allItems = allItems;
     }
 }

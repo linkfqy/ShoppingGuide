@@ -3,10 +3,16 @@
     <search @search="handleSearch"></search>
     <div class="main-box">
       <div style="margin: 20px auto">
-        <h2 class="cate" style="font-size: 24px;">
-          <i class="iconfont icon-r-list" style="font-size: 30px;"></i>
-           选择商品分类
-        </h2>
+        <div class="header">
+          <h2 class="cate" style="font-size: 24px;">
+            <i class="iconfont icon-r-list" style="font-size: 30px;"></i>
+            选择商品分类
+          </h2>
+          <div>
+            <toggle-button button-class="custom-button" @open-new-dialog="openNewDialog">虚拟导购</toggle-button>
+          </div>
+        </div>
+        
         <!--      类别菜单-->
         <el-row :gutter="20" style="font-size: 18px;">
           <el-col v-for="(item, index) in icons" :key="index" :span="6">
@@ -73,13 +79,18 @@
         </el-pagination>
       </div>
     </div>
+
+    
+
+
   </div>
 </template>
 
 <script>
 import axios from "axios";
 import search from "../../../components/Search";
-
+import ToggleButton from '../../Chat.vue';
+import { eventBus } from "@/views/EventBus";
 export default {
   name: "GoodList",
   data() {
@@ -97,11 +108,22 @@ export default {
       categoryIds:[],
       selectedIconId: null,
       isHandCursor: false,
+
+      username: '', 
+      cartItems: [],
+      orderItems: [],
+      currentFirstCategory: '',
+      currentSecondCategory: '',
+      currentFirstCategoryList: [],
+      currentSecondCategoryList: [],
+      allItems: [],
+
       baseApi: this.$store.state.baseApi,
     };
   },
   components: {
     search,
+    ToggleButton
   },
   created() {
     //二者一般不同时存在
@@ -121,11 +143,11 @@ export default {
     },
     handleCurrentPage(currentPage) {
       this.currentPage = currentPage;
-      this.load();
+      this.load('category',);
     },
     handleSearch(text) {
       this.searchText = text;
-      this.load();
+      this.load('category',);
     },
     load(type, id) {
       if (type === 'icon') {
@@ -156,6 +178,7 @@ export default {
     } else if (type === 'category') {
       this.selectedIconId = null;
       if (id != undefined) {
+        this.searchText = "";
         this.categoryId = id;
 
         this.$router.push({
@@ -200,17 +223,47 @@ export default {
         iconId: this.selectedIconId,
         categoryId: this.categoryId
       };
-      const token = localStorage.getItem('token');
-      const headers = {
-        'Authorization': `Bearer ${token}`
-      };
       this.request
       .post("/api/userinfo/post_iconId_or_categoryId", requestData)
       .then((res) => {
-      if (res.code === "200") {
-        const userinfoData = res.data;
-        this.request.post("http://localhost:9193/get_userinfo", userinfoData, {headers: headers});
+        if (res.code === "200") {
+          const userinfoData = res.data;
+
+          this.username = userinfoData.username;
+          this.cartItems = userinfoData.cartItems;
+          this.orderItems = userinfoData.orderItems;
+          this.currentFirstCategory = userinfoData.currentFirstCategory;
+          this.currentSecondCategory = userinfoData.currentSecondCategory;
+          this.currentFirstCategoryList = userinfoData.currentFirstCategoryList;
+          this.currentSecondCategoryList = userinfoData.currentSecondCategoryList;
+          this.allItems = userinfoData.allItems; 
       }});
+    },
+    openNewDialog(){
+      const payload = {
+        username: this.username,
+        cartItems: this.cartItems,
+        orderItems: this.orderItems,
+        currentFirstCategory: this.currentFirstCategory,
+        currentSecondCategory: this.currentSecondCategory,
+        currentFirstCategoryList: this.currentFirstCategoryList,
+        currentSecondCategoryList: this.currentSecondCategoryList,
+        allItems: this.allItems 
+      };
+
+      const token = localStorage.getItem('token');
+      const headers = {
+        'Content-Type': "application/json",
+        'Authorization': `Bearer ${token}`
+      };
+
+      this.request.post("http://localhost:9193/newchat", payload, {headers: headers})
+      .then((res) => {
+        eventBus.$emit('sendMessageToChat', res.aiMsg);
+      })
+      .catch(error => {
+        console.error("Error:", error);
+      });
     },
   },
   computed: {
@@ -230,6 +283,18 @@ export default {
   margin: 5px auto;
 }
 
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cate {
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+}
+
 .black {
   color: black;
 }
@@ -245,4 +310,21 @@ export default {
     color: grey; /* 未选中状态下的颜色为灰色 */
     cursor: pointer;
   }
+
+.dialog-container {
+  display: flex;
+  align-items: center;
+  z-index: 9999;
+}
+
+.toggle-button {
+  width: 100px;
+  height: 40px;
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 4px;
+  text-align: center;
+  line-height: 40px;
+  cursor: pointer;
+}
 </style>

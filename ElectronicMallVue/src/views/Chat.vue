@@ -1,27 +1,36 @@
 <template>
   <div class="dialog-container">
-    <button class="toggle-button" @click="toggleDialog">虚拟导购</button>
+    <el-button type="primary" @click="toggleDialog" style="font-size: 22px">
+      <i class="iconfont icon-r-user3" style="font-size: 26px"></i> 
+      虚拟导购
+    </el-button>
     <div v-if="showDialog" class="dialog">
       <div class="dialog-header">
         <h2>虚拟导购</h2>
-        <button class="close-button" @click="closeDialog">×</button>
+        <!-- <button class="close-button" @click="closeDialog">×</button> -->
+        <el-button type="danger" @click="closeDialog" class="close-button">
+          X
+        </el-button>
       </div>
-      <div class="dialog-body">
+      <div class="dialog-body" ref="dialogBody">
         <div v-for="(message, index) in dialogText" :key="index" class="message" :class="{ 'user-message': message.fromUser, 'robot-message': !message.fromUser }">
-          <img v-if="message.fromUser" src="../resource/img/user.jpg" alt="User Avatar" class="avatar" />
-          <img v-else src="../resource/img/robot.jpg" alt="Robot Avatar" class="avatar" />
-          {{ message.text }}
+            <img v-if="message.fromUser" src="../resource/img/user.jpg" alt="User Avatar" class="avatar" />
+            <img v-else src="../resource/img/robot.jpg" alt="Robot Avatar" class="avatar" />
+            <div>{{ message.text }}</div>
         </div>
       </div>
       <div class="dialog-footer">
-        <input v-model="userInput" type="text" placeholder="输入消息..." />
-        <button class="send-button" @click="sendMessage">发送</button>
+        <input v-model="userInput" @keyup.enter="sendMessageOnEnter" type="text" placeholder="输入消息..." />
+        <el-button type="primary" @click="sendMessage" class="send-button">
+          发送
+        </el-button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { eventBus } from './EventBus';
 export default {
   data() {
     return {
@@ -33,36 +42,48 @@ export default {
   methods: {
     toggleDialog() {
       this.showDialog = !this.showDialog;
+      this.$emit('open-new-dialog');
     },
     closeDialog() {
       this.showDialog = false;
+      this.dialogText = [],
+      this.userInput = ""
     },
     sendMessage() {
       if (this.userInput.trim() !== "") {
         this.dialogText.push({ text: this.userInput, fromUser: true });
         // 调用机器人API发送用户输入并获取回复
-        fetch("http://your-robot-api-url.com", {
+        fetch("http://localhost:9193/chat", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ input: this.userInput })
+          body: JSON.stringify({ userMsg: this.userInput })
         })
           .then(response => response.json())
           .then(data => {
-            this.dialogText.push({ text: data.output, fromUser: false });
+            this.dialogText.push({ text: data.aiMsg, fromUser: false });
+            this.$nextTick(() => {
+              this.$refs.dialogBody.scrollTo(0, this.$refs.dialogBody.scrollHeight);
+            });
           })
           .catch(error => {
             console.error("Error:", error);
           });
         this.userInput = "";
-        // 模拟机器人回复
-        setTimeout(() => {
-          const reply = "这是机器人的回复这是机器人的回复这是机器人的回复这是机器人的回复这是机器人的回复这是机器人的回复这是机器人的回复";
-          this.dialogText.push({ text: reply, fromUser: false });
-        }, 1000);
+      }
+    },
+    sendMessageOnEnter() {
+      if (this.userInput.trim() !== "") {
+        this.sendMessage();
       }
     }
+  },
+  created(){
+    eventBus.$on('sendMessageToChat', message => {
+      this.dialogText.push({text: message, fromUser: false});
+    })
+    this.userInput = "";
   }
 };
 </script>
@@ -70,15 +91,6 @@ export default {
 <style>
 .dialog-container {
   position: relative;
-}
-
-.toggle-button {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
 }
 
 .dialog {
@@ -91,7 +103,6 @@ export default {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  overflow-y: auto;
 }
 
 .dialog-header {
@@ -105,8 +116,11 @@ export default {
 }
 
 .close-button {
-  padding: 4px;
-  background-color: transparent;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: 15px;
   border: none;
   cursor: pointer;
 }
@@ -115,15 +129,18 @@ export default {
   padding: 10px;
   display: flex;
   flex-direction: column;
+  max-height: 60vh;
+  overflow-y: auto;
 }
+
 
 .message {
   display: flex;
-  align-items: flex-start;
+  align-items: first baseline;
   padding: 8px;
   margin-bottom: 8px;
-  border-radius: 4px;
-  word-wrap: break-word;
+  border-radius: 3%;
+  word-wrap: break-word;  
 }
 
 .user-message {
@@ -138,7 +155,9 @@ export default {
   width: 32px;
   height: 32px;
   border-radius: 50%;
+  margin-left: 10px;
   margin-right: 8px;
+  margin-bottom: 20px;
 }
 
 .dialog-footer {
@@ -160,10 +179,6 @@ input[type="text"] {
 .send-button {
   padding: 8px 16px;
   margin-left: 8px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
   cursor: pointer;
 }
 </style>
