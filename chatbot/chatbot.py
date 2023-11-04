@@ -47,7 +47,7 @@ class Chatbot():
         "用户购物车内商品：{cartItems}\n"
         "用户曾购买商品：{orderItems}\n"
         "商城中所有商品：{allItems}\n"
-        "注意每次向用户推荐的商品必须为1~3件！！！\n"
+        "注意：你只需要回答AI的发言，每次向用户推荐的商品必须为1~3件！！！\n"
         "\n以下是你和用户的对话：\n\n"
         "{chat_history}\n"
         "User: {user_msg}\n"
